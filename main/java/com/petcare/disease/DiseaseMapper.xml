@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.petcare.disease.DiseaseMapper">
+
+	<select id="diseaseDetail" resultType="com.petcare.disease.DiseaseDTO">
+		SELECT * FROM disease
+		where d_id=#{id};
+	</select>
+
+	<select id="diseaseList" resultType="com.petcare.disease.DiseaseDTO">
+		SELECT d_id, d_name,
+		d_symptom FROM disease
+		WHERE
+		category LIKE CONCAT('%', #{category},'%')
+	</select>
+
+
+	<select id="countFromDisease" resultType="int">
+		SELECT count(*) FROM
+		disease
+		WHERE
+		category LIKE CONCAT('%', #{category},'%')
+	</select>
+
+	<!-- 검색 부분 -->
+	<select id="autocomplete" resultType="String">
+		<if test='type==1' >
+		SELECT d_name
+		FROM disease
+		WHERE
+		d_name LIKE CONCAT(#{text},'%')
+		AND
+		category LIKE CONCAT('%', #{category},'%')
+		</if>
+		<if test='type==2'>
+		SELECT symptom
+		FROM symptom
+		WHERE
+		symptom LIKE CONCAT(#{text},'%')
+		</if>
+		LIMIT 0, 6;
+		
+	</select>
+
+	<select id="searchDiseaseList" resultType="com.petcare.disease.DiseaseDTO">
+		SELECT d_id, d_name
+		FROM disease
+
+		<if test='type == 1'>
+			WHERE
+			d_name LIKE CONCAT('%', #{text},'%')
+		</if>
+		<if test='type == 2'>
+			WHERE
+			d_symptom LIKE CONCAT('%', #{text},'%')
+		</if>
+		AND
+		category LIKE CONCAT('%', #{category},'%')
+		LIMIT #{page}, 10;
+	</select>
+
+	<select id="searchDiseaseListCount" resultType="int">
+		SELECT count(*)
+		FROM disease
+
+		<if test='type == 1'>
+			WHERE
+			d_name LIKE CONCAT('%', #{text},'%')
+		</if>
+		<if test='type == 2'>
+			WHERE
+			d_symptom LIKE CONCAT('%', #{text},'%')
+		</if>
+		AND
+		category LIKE CONCAT('%', #{category},'%')
+	</select>
+
+
+	<!-- GCM 부분 -->
+	<insert id="registrationIdInsert" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT registration (registrationId)
+		VALUES
+		(#{registrationId});
+	</insert>
+
+
+	<select id="selectRegistrationId" resultType="com.petcare.disease.GcmDTO">
+		SELECT * FROM
+		registration
+		where registrationId=#{registrationId};
+	</select>
+
+	<select id="selectRegistration" resultType="com.petcare.disease.GcmDTO">
+		SELECT * FROM
+		registration;
+	</select>
+
+	<!-- 유행 질병 부분 -->
+	<select id="diseaseCheck" resultType="int">
+		SELECT count(*) FROM
+		lateDisease
+		WHERE
+		ictsd_occrrnc_no=#{ictsd_occrrnc_no}
+
+	</select>
+
+	<insert id="lateDiseaseInsert" useGeneratedKeys="true"
+		keyProperty="id">
+		INSERT
+		lateDisease(lknts_nm,dgnss_engs_nm,occrrnc_lvstckcnt,lvstckspc_nm,occrrnc_de,farm_locplc,ictsd_occrrnc_no)
+		VALUES
+		(#{lknts_nm},#{dgnss_engs_nm},#{occrrnc_lvstckcnt},#{lvstckspc_nm},#{occrrnc_de},#{farm_locplc},#{ictsd_occrrnc_no})
+
+	</insert>
+
+
+	<select id="getLateDiseaseList" resultType="com.petcare.disease.LateDiseaseDTO">
+		SELECT id,
+		occrrnc_de, lknts_nm, farm_locplc FROM lateDisease
+		ORDER BY occrrnc_de
+		DESC
+		LIMIT #{page}, 10;
+	</select>
+
+	<select id="lateDiseaseDetail" resultType="com.petcare.disease.LateDiseaseDTO">
+		SELECT * FROM
+		lateDisease
+		where id=#{id};
+	</select>
+
+
+
+	<select id="countFromlateDisease" resultType="int">
+		SELECT count(*)
+		FROM lateDisease;
+	</select>
+
+
+
+</mapper>
+
